@@ -66,6 +66,7 @@ void main() {
   // auto obj = Test_glTF("BoxTexturedNonPowerOfTwo");
   // auto obj = Test_glTF("BoxVertexColors");
   // auto obj = Test_glTF("Duck");
+  auto obj = Test_glTF("2CylinderEngine");
   // auto obj = Test_glTF("Avocado");
   // auto obj = Test_glTF("Cube");
   // auto obj = Test_glTF("SciFiHelmet");
@@ -85,8 +86,11 @@ void main() {
   do {
     time = Update_Start();
     auto mtx = camera.Camera_Matrix(time);
+    auto scene = &obj.scenes[0];
     mtx = mtx*float4x4.identity.rotate(time*1.0f, float3(0.4f, 0.0f, 1.3f));
-    foreach ( mesh; obj.meshes ) mesh.Render(mtx);
+    foreach ( node; scene.gltf.nodes ) {
+      obj.RGL_glTFNode(node).Render(mtx);
+    }
     ptime = time;
   } while ( Update_End );
 }
