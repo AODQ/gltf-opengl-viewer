@@ -61,19 +61,32 @@ void main() {
   // auto obj = Test_glTF("TriangleWithoutIndices");
   // auto obj = Test_glTF("Triangle");
   // auto obj = Test_glTF("Box");
-  auto obj = Test_glTF("BoxTextured");
   // auto obj = Test_glTF("BoxInterleaved");
+  // auto obj = Test_glTF("BoxTextured");
+  // auto obj = Test_glTF("BoxTexturedNonPowerOfTwo");
+  // auto obj = Test_glTF("BoxVertexColors");
+  // auto obj = Test_glTF("Duck");
+  // auto obj = Test_glTF("Avocado");
+  // auto obj = Test_glTF("Cube");
   // auto obj = Test_glTF("SciFiHelmet");
   // auto obj = Test_glTF("Suzanne");
   // auto obj = Test_glTF("WaterBottle");
+  // auto obj = Test_glTF("MetalRoughSpheres");
+  // auto obj = Test_glTF("OrientationTest");
+  // auto obj = Test_glTF("RiggedSimple");
+  // auto obj = Test_glTF("BrainStem");
+  // auto obj = Test_glTF("VC");
+  // auto obj = Test_glTF("DamagedHelmet");
+  // auto obj = Test_glTF("CesiumMan");
   auto camera = Camera(obj.gltf);
 
   float time, ptime = 0.0f;
+  writeln("RENDER ", obj.meshes.length, " MESH(ES)");
   do {
     time = Update_Start();
     auto mtx = camera.Camera_Matrix(time);
     mtx = mtx*float4x4.identity.rotate(time*1.0f, float3(0.4f, 0.0f, 1.3f));
-    obj.meshes[0].Render(mtx);
+    foreach ( mesh; obj.meshes ) mesh.Render(mtx);
     ptime = time;
   } while ( Update_End );
 }
