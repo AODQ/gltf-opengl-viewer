@@ -10,12 +10,12 @@ import derelict.glfw3, derelict.opengl;
 struct Camera {
   float3 bbox_max, bbox_min;
 
-  this ( glTFObject obj ) {
+  this ( GL_glTFRoot obj ) {
     // find bbox max/min by iterating over every mesh
     bbox_max = float3(-float.max);
     bbox_min = float3( float.max);
     foreach ( ref mesh; obj.meshes ) {
-      foreach ( ref primitive; mesh.primitives ) {
+      foreach ( ref primitive; mesh.gltf.primitives ) {
         auto accessor = primitive.RAccessor(glTFAttribute.Position);
         float T = cast(float)accessor.max[0].get!real;
         bbox_max.x = max(accessor.max[0].get!real, bbox_max.x);
@@ -29,13 +29,19 @@ struct Camera {
   }
 
   private immutable static float3 up = float3(0.0f, 1.0f, 0.0f);
-  float4x4 Camera_Matrix (float time) {
+  float4x4 View_Projection(float time) {
     float3 bbox_len = abs(bbox_max-bbox_min);
     float3 O, center = float3(0.0f);
-    O = float3(bbox_max.x, bbox_max.y, bbox_max.z)*2.0f;
-    return
-      float4x4.perspective(640.0f, 480.0f, 60.0f, 0.1f, 10.0f) *
-      float4x4.look_at(O, center, up);
+    // O = float3(1.0f, 0.0f, 2.0f);
+    float X = max(bbox_max.x, bbox_max.z);
+    O = float3(X*3.0f, bbox_max.y*1.5f, X*3.0f);
+    O.x *= sin(time);
+    O.y *= sin(time*0.5f);
+    O.z *= cos(time);
+    return float4x4.look_at(O, center, up);
+  }
+  float4x4 Perspective_Projection(float time) {
+    return float4x4.perspective(640.0f, 480.0f, 90.0f, 0.1f, 10.0f);
   }
 }
 
@@ -43,7 +49,7 @@ auto Test_glTF ( string file ) {
   import std.string : format;
   file = "glTF-Sample-Models/2.0/%s/glTF/%s.gltf".format(file, file);
   writeln(file);
-  return GL_glTF_Load_File(file);
+  return new GL_glTFRoot(file);
 }
 
 auto Test_glTFBinary ( string file ) {
@@ -66,11 +72,11 @@ void main() {
   // auto obj = Test_glTF("BoxTexturedNonPowerOfTwo");
   // auto obj = Test_glTF("BoxVertexColors");
   // auto obj = Test_glTF("Duck");
-  auto obj = Test_glTF("2CylinderEngine");
+  // auto obj = Test_glTF("2CylinderEngine");
   // auto obj = Test_glTF("Avocado");
   // auto obj = Test_glTF("Cube");
   // auto obj = Test_glTF("SciFiHelmet");
-  // auto obj = Test_glTF("Suzanne");
+  auto obj = Test_glTF("Suzanne");
   // auto obj = Test_glTF("WaterBottle");
   // auto obj = Test_glTF("MetalRoughSpheres");
   // auto obj = Test_glTF("OrientationTest");
@@ -79,17 +85,17 @@ void main() {
   // auto obj = Test_glTF("VC");
   // auto obj = Test_glTF("DamagedHelmet");
   // auto obj = Test_glTF("CesiumMan");
-  auto camera = Camera(obj.gltf);
+  auto camera = Camera(obj);
 
   float time, ptime = 0.0f;
   writeln("RENDER ", obj.meshes.length, " MESH(ES)");
   do {
     time = Update_Start();
-    auto mtx = camera.Camera_Matrix(time);
+    auto v_mtx = camera.View_Projection(time);
+    auto p_mtx = camera.Perspective_Projection(time);
     auto scene = &obj.scenes[0];
-    mtx = mtx*float4x4.identity.rotate(time*1.0f, float3(0.4f, 0.0f, 1.3f));
     foreach ( node; scene.gltf.nodes ) {
-      obj.RGL_glTFNode(node).Render(mtx);
+      obj.nodes[node].gl.Render(obj, v_mtx, p_mtx);
     }
     ptime = time;
   } while ( Update_End );
