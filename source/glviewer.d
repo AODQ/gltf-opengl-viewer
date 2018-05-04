@@ -62,3 +62,28 @@ bool Update_End() {
             glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS);
 }
 
+bool Mouse_Left ( ) {
+  return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+}
+
+float[2] Mouse_Position ( ) {
+  if ( glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE )
+    return [0f, 0f];
+  double d_xpos, d_ypos;
+  glfwGetCursorPos(window, &d_xpos, &d_ypos);
+  return cast(float[2])[d_xpos/cast(float)window_width,
+                        d_ypos/cast(float)window_height];
+}
+
+float[2] Mouse_Offset ( ) {
+  static float last_xpos = 0f, last_ypos = 0f;
+  double d_xpos, d_ypos;
+  glfwGetCursorPos(window, &d_xpos, &d_ypos);
+  float xpos = d_xpos, ypos = d_ypos;
+
+  float[2] ret = [0f, 0f];
+  if ( glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS )
+    ret = [xpos - last_xpos, ypos - last_ypos];
+  last_xpos = xpos; last_ypos = ypos;
+  return ret;
+}
