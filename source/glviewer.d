@@ -28,11 +28,9 @@ void Initialize_GL ( ) {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 
   glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
-  glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  // glDisable(GL_DEPTH_TEST);
 
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(cast(GLDEBUGPROC)&Message_Callback, null);
@@ -55,8 +53,6 @@ float Update_Start ( ) {
   return time;
 }
 bool Update_End() {
-  glfwSwapBuffers(window);
-  glfwPollEvents();
   return !(glfwWindowShouldClose(window) ||
             glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ||
             glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS);
@@ -68,7 +64,7 @@ bool Mouse_Left ( ) {
 
 float[2] Mouse_Position ( ) {
   if ( glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE )
-    return [0f, 0f];
+    return [cast(float)window_width/2.0f, cast(float)window_height/2.0f];
   double d_xpos, d_ypos;
   glfwGetCursorPos(window, &d_xpos, &d_ypos);
   return cast(float[2])[d_xpos/cast(float)window_width,
